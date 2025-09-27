@@ -1,21 +1,15 @@
 ﻿using System;
+using System.Xml.Linq;
 
 class MainClass
 {
     public static void Main(string[] args)
     {
-        DaysOfWeek MyFavoriteDay;
+        string name = "Евгения";
+        string age = "27";
+        string favcolor = "black";
+        Console.WriteLine($"{name} \n {age} \n {favcolor}");
 
-        MyFavoriteDay = DaysOfWeek.Friday;
-
-        Console.WriteLine(MyFavoriteDay);
+        Console.ReadKey();
     }
-}
-
-enum DaysOfWeek : byte
-{
-    Tuesday,
-    Monday,
-    Wednesday,
-    Friday
 }
