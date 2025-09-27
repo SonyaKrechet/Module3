@@ -9,24 +9,21 @@ enum DayOfWeeks
 class MainClass
 {
     public static void Main(string[] args)
-    
-        {
-      
 
-      
-        Console.WriteLine("Enter your name");
-        string name = Console.ReadLine();
-        Console.WriteLine("Enter your age");
-        int age = checked((int.Parse(Console.ReadLine())));
+    {
 
-        Console.WriteLine("Your name is {0} and age is {1}", name, age);
-        Console.WriteLine("What is your favourite day of week");
-        byte day = checked((byte.Parse(Console.ReadLine())));
-        Console.WriteLine("Your favourite day is {0}", (DayOfWeeks) day);
+        var name = Console.ReadLine();
 
-        Console.ReadKey();
-        }
+        var age = checked((byte)int.Parse(Console.ReadLine()));
+        Console.WriteLine("Your name is {0} and age is {1} ", name, age);
+
+        Console.Write("What is your favorite day of week? ");
+
+        var day = (DayOfWeek)int.Parse(Console.ReadLine());
+        Console.WriteLine("Your favorite day is {0}", day);
+
+    }
 
 
-    
+
 }
