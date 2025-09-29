@@ -11,21 +11,32 @@ class MainClass
     public static void Main(string[] args)
 
     {
-        Console.WriteLine("Enter your name");
-        var name = Console.ReadLine();
-        Console.WriteLine("Enter your age");
-        var age = checked((byte)int.Parse(Console.ReadLine()));
-        Console.WriteLine("Your name is {0} and age is {1} ", name, age);
+        Console.WriteLine("Напишите свой любимый цвет на английском с маленькой буквы");
 
-        Console.Write("What is your favorite day of week? ");
+        var color = Console.ReadLine();
 
-        var day = (DayOfWeek)int.Parse(Console.ReadLine());
-        Console.WriteLine("Your favorite day is {0}", day);
-        Console.WriteLine("Enter your birthday");
-        var birthday = DateOnly.Parse(Console.ReadLine());
-        Console.WriteLine("Your birthday date is {0}", birthday);
+        if (color == "red")
+        {
+            Console.BackgroundColor = ConsoleColor.Red;
+            Console.ForegroundColor = ConsoleColor.Black;
 
+            Console.WriteLine("Your color is red!");
+        }
 
+        else if (color == "green")
+        {
+            Console.BackgroundColor = ConsoleColor.Green;
+            Console.ForegroundColor = ConsoleColor.Black;
+
+            Console.WriteLine("Your color is green!");
+        }
+        else
+        {
+            Console.BackgroundColor = ConsoleColor.Cyan;
+            Console.ForegroundColor = ConsoleColor.Black;
+
+            Console.WriteLine("Your color is cyan!");
+        }
     }
 
 
