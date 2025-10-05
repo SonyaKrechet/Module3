@@ -1,26 +1,26 @@
 ﻿using System;
-using System.Security.Cryptography;
-using System.Xml.Linq;
+class Program
 
-class MainClass
-
-{
-    public static void Main(string[] args)
+{ static void Main(string[] args)
     {
-        Console.WriteLine("Введите ваше имя");
-        string name = Console.ReadLine();
-        
-        char[] letters = name.ToCharArray();
-        Console.WriteLine("Ваше имя в обратном порядке:");
-        for (int i = letters.Length - 1; i >= 0; i--)
-        {
-            Console.Write(letters[i] + " ");
 
-                }
-        
+        int[,] numbers = {
+            { 1, 2, 3 },
+            { 5, 7, 9 },
+            { 10, 11, 12 },
+            {13, 15, 17 }
+        };
+         for (int i = 0; i <= numbers.GetUpperBound(0) + 1; i++)
+        { for (int k = 0; k <= numbers.GetUpperBound(1); k++)
+            { Console.Write(numbers[i, k] + " "); }
+            Console.WriteLine();
+}
+
+
+
+
+
         Console.ReadKey();
     }
-
     
-
-}
+        }
