@@ -3,20 +3,26 @@
 {
     static void Main(string[] args)
     {
-        Console.WriteLine("Напиши три любиых цвета на английском с маленькой буквы и через запятую");
-        string[] colors = ShowColor();
-        Console.WriteLine("Ваши любиыме цвета:");
-        foreach (string color in colors) 
+        
+        int[] result = GetArrayFromConsole();
+        
+        foreach (int number in result)
         {
-            Console.WriteLine(color);
+            Console.WriteLine(number);
         }
     }
-
-    static string[] ShowColor()
+    static int[] GetArrayFromConsole()
     {
+       var result = new int[5];
+
+       for (int i = 0; i < result.Length; i++)
+       {
+           Console.WriteLine("Введите элемент массива номер {0}", i + 1);
+           result[i] = int.Parse(Console.ReadLine());
+                
+        }
+        Array.Sort(result);
+        return result;
         
-        string input = Console.ReadLine();
-        string[] colors = input.Split(',');
-        return colors;
     }
 }
