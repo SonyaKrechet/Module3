@@ -8,19 +8,17 @@ class MainClass
     {
         Console.WriteLine("Введите число");
         int number = int.Parse(Console.ReadLine());
-        int result = Factorial(number);
+        Console.WriteLine("Введите степень");
+        byte pow = byte.Parse(Console.ReadLine());
+        int result = PowerUp(number, pow);
         Console.WriteLine ($"Ответ {result}");
           
         }
-    static int Factorial(in int number)
+    private static int PowerUp(int number, byte pow)
     {
-        if (number == 0)
-        {
-            return 1;
-        }
+        if (pow == 0)
+            return 1;            
         else
-        {
-            return number * Factorial(number - 1);
-        }
+            return number * PowerUp(number, (byte)(pow - 1));
     }
 }
