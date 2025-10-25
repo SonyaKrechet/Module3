@@ -1,28 +1,26 @@
 ﻿using System;
-using System.Security.Cryptography.X509Certificates;
+using System.Net.NetworkInformation;
 
 class MainClass
 {
+
     public static void Main(string[] args)
     {
-        Console.WriteLine("Введите количество элементов массива");
-        int n = int.Parse(Console.ReadLine());
-        int[] arr = new int[n];
-        Console.WriteLine("Введите элементы массива");
-        for (int i = 0; i < n; i++) 
-        { Console.Write($"arr[{i}]=");
-            arr[i] = int.Parse(Console.ReadLine());
+        Console.WriteLine("Введите число");
+        int number = int.Parse(Console.ReadLine());
+        int result = Factorial(number);
+        Console.WriteLine ($"Ответ {result}");
+          
         }
-        SortArray(arr);
-        Console.WriteLine(string.Join(", ", arr));
-    }
-    static void SortArray(int[] arr)
+    static int Factorial(in int number)
     {
-        Array.Sort(arr);
-        
+        if (number == 0)
+        {
+            return 1;
+        }
+        else
+        {
+            return number * Factorial(number - 1);
+        }
     }
-
-
-        
-    
 }
