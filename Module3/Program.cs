@@ -1,100 +1,145 @@
 ﻿using System;
-using System.ComponentModel.Design;
-using System.Globalization;
+using System.Threading.Tasks.Dataflow;
+using System.Collections.Generic;
 
-
-class MainClass
+abstract class Delivery
 {
-
-    public static void Main(string[] args)
+    public string Address;
+    public Delivery(string address)
     {
-        Console.WriteLine("Ваше имя");
-        string name = Console.ReadLine();
-        Console.WriteLine("Ваша фамилия");
-        string surname = Console.ReadLine();
-        Console.WriteLine("Ваш возраст");
-        string ageCheck = Console.ReadLine();
-        int age = CheckInt(ageCheck);
-        Console.WriteLine("Есть ли у вас питомцы?");
-        string petsCheck = Console.ReadLine();
-        bool pets = CheckBool(petsCheck);
-        string[] petNames = null;
-        if (pets == true)
-        {
-            Console.WriteLine("Сколько у вас питомцев?");
-            string petCheck = Console.ReadLine();
-            int petNumber = CheckInt(petCheck);
-            petNames = PetNames(petNumber);
-
-        }
-        else petNames = new string[0];
-            Console.WriteLine("Сколько у вас любимых цветов?");
-        string colorsCheck = Console.ReadLine();
-        int colorNumber = CheckInt(colorsCheck);
-        string[] colors = Colors(colorNumber);
-        var anketa = (name: name, surname: surname, age: age, pets: string.Join(",", petNames), colors: string.Join(",", colors));
-        Console.WriteLine($"Имя: {anketa.name}, Фамилия: {anketa.surname}, Возраст: {anketa.age}");
-        Console.WriteLine($"Питомцы: {anketa.pets}");
-        Console.WriteLine($"Любимые цвета: {anketa.colors}");
+        Address = address;
     }
-     public static string[] PetNames (int PetNumber)
-    {
-        string[] pets = new string[PetNumber];
-        for (int i = 0; i < PetNumber; i++)
-        {
-            Console.WriteLine($"Введите кличку питомца {i + 1}");
-            pets[i] = Console.ReadLine();
-            
-        }
-        return pets;
-    }
-    public static string[] Colors(int ColorNumber)
-    {
-        string[] colors = new string[ColorNumber];
-        for (int i = 0; i < ColorNumber; i++)
-        {
-            Console.WriteLine($"Введите любимый цвет {i + 1}");
-            colors[i] = Console.ReadLine();
-            
-        }
-        return colors;
-    }
-    public static bool CheckBool(string petsCheck)
-    {
-        while (true)
-        {
-
-            if (petsCheck == "true")
-                return true;
-            if (petsCheck == "false")
-                return false;
-
-            else
-
-                Console.WriteLine("Ошибка: нужно ввести true/false. Попробуйте снова.");
-            petsCheck = Console.ReadLine();
-        }
-    }
-    public static int CheckInt(string intCheck)
-    {
-        while (true)
-        {
-
-            if (int.TryParse(intCheck, out int result))
-            { 
-                if (result != 0)
-                
-                    return result;
-                else
-                        Console.WriteLine("Ошибка: число не может быть меньше или равно 0. Попробуйте снова.");
-             }
-            else
-
-                Console.WriteLine("Ошибка: нужно ввести число. Попробуйте снова.");
-            intCheck = Console.ReadLine();
-        }
-        
-    }
-
 }
+
+class HomeDelivery : Delivery
+{
+    public HomeDelivery(string address) : base(address) { }
+}
+
+class PickPointDelivery : Delivery
+{
+    public string Company;
+    public PickPointDelivery(string address, string company) : base(address)
+    {
+        Company = company;
+    }
+}
+
+class ShopDelivery : Delivery
+{
+    public ShopDelivery(string address) : base(address) { }
+}
+
+class Customer
+{
+    public string Name { get; private set; }
+    public string Phone { get; private set; }
+    public List<Product> Cart { get; private set; } = new List<Product>(); //корзина для продуктов
+    public Customer(string name, string phone)
+    {
+        Name = name;
+        Phone = phone;
+    }
+    public decimal CalculateTotal() //считаем сумму заказа
+    {
+        decimal total = 0;
+        foreach (var product in Cart)
+        {
+            total += product.Price;
+        }
+        return total;
+    }
+}
+class Product
+{
+    public string Name { get; private set; }
+    public decimal Price { get; private set; }
+    public Product (string name, decimal price)
+    {
+        Name = name;
+        Price = price;
+    }
+}
+class Program
+{
+    static void Main(string[] args)
+
+    {
+        List<Product> products = new List<Product> // создаем продукты
+        {
+            new Product("Пицца", 1000),
+            new Product("Суши", 1500),
+            new Product("Напиток", 200)
+        };
+        
+
+        Console.WriteLine("Введите ваше имя");
+        string name = Console.ReadLine();
+        Console.WriteLine("Введите ваш телефон");
+        string phone = Console.ReadLine();
+        Customer customer = new Customer(name, phone);
+        Console.WriteLine("Выберите продукты из списка. Перечислите выбранные продукты номерами через запятую. Для отмены введите 0");
+        for (int i = 0; i < products.Count; i++)
+        {
+            Console.WriteLine($"{i + 1}. {products[i].Name} — {products[i].Price} руб.");
+        }
+        string input = Console.ReadLine();
+        if (input == "0")
+        {
+            Console.WriteLine("Вы отменили выбор продуктов.");
+        }
+        else
+        {
+            string[] choices = input.Split(',');
+            foreach (var c in choices)
+            {
+                int index;
+                if (int.TryParse(c, out index) && index > 0 && index <= products.Count)
+                {
+                    customer.Cart.Add(products[index - 1]);
+                }
+            }
+        }
+        decimal total = customer.CalculateTotal();
+        Console.WriteLine($"Сумма заказа = {total}. Подтвердить y/n?");
+        string answer = Console.ReadLine();
+        if ( answer == "y" )
+        {
+              Console.WriteLine("Выберите тип доставки: 1 - Дом, 2 - ПВЗ, 3 - Магазин");
+              string deliveryChoice = Console.ReadLine();
+              Delivery delivery = null;
+              switch (deliveryChoice)
+                {
+                    case "1":
+                        Console.WriteLine("Введите адрес доставки:");
+                        string homeAddress = Console.ReadLine();
+                        delivery = new HomeDelivery(homeAddress);
+                        break;
+                    case "2":
+                        Console.WriteLine("Введите адрес ПВЗ:");
+                        string pickAddress = Console.ReadLine();
+                        Console.WriteLine("Введите компанию доставки:");
+                        string company = Console.ReadLine();
+                        delivery = new PickPointDelivery(pickAddress, company);
+                        break;
+                    case "3":
+                        Console.WriteLine("Введите адрес магазина:");
+                        string shopAddress = Console.ReadLine();
+                        delivery = new ShopDelivery(shopAddress);
+                        break;
+                    default:
+                        Console.WriteLine("Неверный выбор доставки");
+                        break;
+                }
+            }
+        else
+        {
+            Console.WriteLine("Вы отменили заказ");
+        }
+    }
+    
+}
+
+
+
     
