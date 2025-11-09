@@ -1,145 +1,228 @@
 ﻿using System;
-using System.Threading.Tasks.Dataflow;
 using System.Collections.Generic;
 
-abstract class Delivery
+public abstract class Delivery
 {
-    public string Address;
-    public Delivery(string address)
+    public string Address { get; set; }
+    public virtual void GetDeliveryInfo()
+    {
+        Console.WriteLine($"Адрес доставки: {Address}");
+        Console.WriteLine($"Покупатель: {Customer.Name}");
+    }
+
+    public Customer Customer { get; set; } // у каждой доставки есть заказ и покупатель
+
+    public Delivery(string address, Customer customer)
     {
         Address = address;
+        Customer = customer;
+    }
+
+    public abstract decimal CalculateDeliveryCost(); // абстрактный метод для расчета стоимости доставки
+}
+
+public class HomeDelivery : Delivery
+{
+    public string CourierName { get; private set; }
+
+    public HomeDelivery(string address, Customer customer, string courierName)
+        : base(address, customer)  // обращение к конструктору абстрактного класса
+    {
+        CourierName = courierName;
+    }
+
+    public override void GetDeliveryInfo()
+    {
+        Console.WriteLine($"Доставка на дом по адресу: {Address}");
+        Console.WriteLine($"Курьер: {CourierName}");
+    }
+
+    public override decimal CalculateDeliveryCost()
+    {
+        return 200; // фиксированная стоимость для домашней доставки
     }
 }
 
-class HomeDelivery : Delivery
+public class PickPointDelivery : Delivery
 {
-    public HomeDelivery(string address) : base(address) { }
-}
+    public string Company { get; private set; }
+    public string PickPointName { get; private set; }
 
-class PickPointDelivery : Delivery
-{
-    public string Company;
-    public PickPointDelivery(string address, string company) : base(address)
+    public PickPointDelivery(string address, Customer customer, string company, string pickPointName)
+        : base(address, customer)
     {
         Company = company;
+        PickPointName = pickPointName;
+    }
+
+    public override void GetDeliveryInfo()
+    {
+        Console.WriteLine($"Доставка в пункт выдачи: {PickPointName}");
+        Console.WriteLine($"Компания: {Company}");
+        Console.WriteLine($"Адрес: {Address}");
+    }
+
+    public override decimal CalculateDeliveryCost()
+    {
+        return 300; // фиксированная стоимость для доставки пикпоинт
     }
 }
 
-class ShopDelivery : Delivery
+public class ShopDelivery : Delivery
 {
-    public ShopDelivery(string address) : base(address) { }
+    public string Shop { get; private set; }
+
+    public ShopDelivery(string address, Customer customer, string shop)
+        : base(address, customer)
+    {
+        Shop = shop;
+    }
+
+    public override void GetDeliveryInfo()
+    {
+        Console.WriteLine($"Доставка в магазин: {Shop}");
+        Console.WriteLine($"Адрес: {Address}");
+    }
+
+    public override decimal CalculateDeliveryCost()
+    {
+        return 400; // фиксированная стоимость для доставки в магазин
+    }
 }
 
-class Customer
+public class Product
 {
-    public string Name { get; private set; }
-    public string Phone { get; private set; }
-    public List<Product> Cart { get; private set; } = new List<Product>(); //корзина для продуктов
+    public string Name { get; set; }
+
+    private decimal _price; // храним цену
+    public decimal Price
+    {
+        get => _price;
+        set
+        {
+            if (value < 0) // допустим что цена товара может быть 0
+                throw new ArgumentException("Цена товара должна быть положительной");
+            _price = value;
+        }
+    }
+
+    public Product(string name, decimal price)
+    {
+        Name = name;
+        Price = price; // проверяем price
+    }
+}
+
+public class Customer
+{
+    public string Name { get; set; }
+    private string _phone; // храним номер
+
+    public string Phone
+    {
+        get => _phone;
+        set
+        {
+            if (value.Length != 10)  // проверка длины
+                throw new ArgumentException("Телефон должен содержать 10 символов");
+
+            _phone = value;
+        }
+    }
+
     public Customer(string name, string phone)
     {
         Name = name;
         Phone = phone;
     }
-    public decimal CalculateTotal() //считаем сумму заказа
+
+    public static Customer CreateCustomer(string name, string phone)
+    {
+        return new Customer(name, phone);
+    }
+}
+
+public class Order<TDelivery> where TDelivery : Delivery
+{
+    public TDelivery Delivery;
+
+    private static int _orderCounter = 0; // статический счётчик всех заказов
+    public int Number { get; private set; } // номер заказа, уникальный
+
+    private List<Product> products = new List<Product>(); // список товаров
+
+    public Product this[int index]
+    {
+        get => products[index];
+        set => products[index] = value;
+    }
+
+    public void DisplayAddress()
+    {
+        Console.WriteLine(Delivery.Address);
+    }
+
+    public void AddProducts<T>(List<T> items) where T : Product
+    {
+        foreach (var item in items)
+            products.Add(item);
+    }
+
+    public Order(TDelivery delivery)
+    {
+        Delivery = delivery;
+        Number = ++_orderCounter;
+    }
+
+    public List<Product> GetProducts()
+    {
+        return products;
+    }
+}
+
+public static class OrderExtensions
+{
+    public static decimal TotalPrice<TDelivery>(this Order<TDelivery> order) where TDelivery : Delivery
     {
         decimal total = 0;
-        foreach (var product in Cart)
+        foreach (var product in order.GetProducts())
         {
             total += product.Price;
         }
         return total;
     }
 }
-class Product
+
+class PickPointOrder : Order<PickPointDelivery>
 {
-    public string Name { get; private set; }
-    public decimal Price { get; private set; }
-    public Product (string name, decimal price)
+    public string PickupCode { get; set; }
+
+    public PickPointOrder(PickPointDelivery delivery) : base(delivery) { }
+
+    public void ShowPickupCode()
     {
-        Name = name;
-        Price = price;
+        Console.WriteLine($"Код выдачи: {PickupCode}");
     }
 }
+
 class Program
 {
-    static void Main(string[] args)
-
+    static void Main()
     {
-        List<Product> products = new List<Product> // создаем продукты
-        {
-            new Product("Пицца", 1000),
-            new Product("Суши", 1500),
-            new Product("Напиток", 200)
-        };
-        
+        Customer customer = Customer.CreateCustomer("Маша", "9990009900");
+        HomeDelivery homeDelivery = new HomeDelivery("ул. Пушкина, д.10", customer, "Сергей");
 
-        Console.WriteLine("Введите ваше имя");
-        string name = Console.ReadLine();
-        Console.WriteLine("Введите ваш телефон");
-        string phone = Console.ReadLine();
-        Customer customer = new Customer(name, phone);
-        Console.WriteLine("Выберите продукты из списка. Перечислите выбранные продукты номерами через запятую. Для отмены введите 0");
-        for (int i = 0; i < products.Count; i++)
-        {
-            Console.WriteLine($"{i + 1}. {products[i].Name} — {products[i].Price} руб.");
-        }
-        string input = Console.ReadLine();
-        if (input == "0")
-        {
-            Console.WriteLine("Вы отменили выбор продуктов.");
-        }
-        else
-        {
-            string[] choices = input.Split(',');
-            foreach (var c in choices)
-            {
-                int index;
-                if (int.TryParse(c, out index) && index > 0 && index <= products.Count)
-                {
-                    customer.Cart.Add(products[index - 1]);
-                }
-            }
-        }
-        decimal total = customer.CalculateTotal();
-        Console.WriteLine($"Сумма заказа = {total}. Подтвердить y/n?");
-        string answer = Console.ReadLine();
-        if ( answer == "y" )
-        {
-              Console.WriteLine("Выберите тип доставки: 1 - Дом, 2 - ПВЗ, 3 - Магазин");
-              string deliveryChoice = Console.ReadLine();
-              Delivery delivery = null;
-              switch (deliveryChoice)
-                {
-                    case "1":
-                        Console.WriteLine("Введите адрес доставки:");
-                        string homeAddress = Console.ReadLine();
-                        delivery = new HomeDelivery(homeAddress);
-                        break;
-                    case "2":
-                        Console.WriteLine("Введите адрес ПВЗ:");
-                        string pickAddress = Console.ReadLine();
-                        Console.WriteLine("Введите компанию доставки:");
-                        string company = Console.ReadLine();
-                        delivery = new PickPointDelivery(pickAddress, company);
-                        break;
-                    case "3":
-                        Console.WriteLine("Введите адрес магазина:");
-                        string shopAddress = Console.ReadLine();
-                        delivery = new ShopDelivery(shopAddress);
-                        break;
-                    default:
-                        Console.WriteLine("Неверный выбор доставки");
-                        break;
-                }
-            }
-        else
-        {
-            Console.WriteLine("Вы отменили заказ");
-        }
+        Order<HomeDelivery> order = new Order<HomeDelivery>(homeDelivery);
+
+        Product p1 = new Product("Товар1", 100);
+        Product p2 = new Product("Товар2", 200);
+        order.AddProducts(new List<Product> { p1, p2 });
+
+        homeDelivery.GetDeliveryInfo();
+        Console.WriteLine($"Стоимость доставки: {homeDelivery.CalculateDeliveryCost()}");
+
+       
+        Console.WriteLine($"Итоговая стоимость товаров: {order.TotalPrice()}");
     }
-    
+    // компилятор ругался на доступы поэтому сделала все классы публичными
 }
-
-
-
-    
