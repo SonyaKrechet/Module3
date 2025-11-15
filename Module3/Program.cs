@@ -20,7 +20,7 @@ class Program
 {
     static void Main()
     {
-        List<Human> humans = new List<Human>() // создаем людишек
+        List<Human> humans = new List<Human>() // людишки
         {
             new Human("Иванов"),
             new Human("Петров"),
