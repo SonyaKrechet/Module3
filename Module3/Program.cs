@@ -1,18 +1,49 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Linq.Expressions;
 
-public class MyException : Exception
+public interface ILogger
 {
-    public MyException(string message) : base(message) { }
+    void LogInfo(string message);   // События
+    void LogError(string message);  // Ошибки
 }
 
-public class Human
+public class ConsoleLogger : ILogger
 {
-    public string Surname { get; private set; }
-    public Human(string surname)
+    public void LogInfo(string message)
     {
-        Surname = surname;
+        Console.ForegroundColor = ConsoleColor.Blue; 
+        Console.WriteLine(message);
+        Console.ResetColor();
+    }
+
+    public void LogError(string message)
+    {
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine(message);
+        Console.ResetColor();
+    }
+}
+public interface ICalculator
+{
+    int Add(int a, int b);
+}
+
+public class Calculator: ICalculator
+{
+    private readonly ILogger _logger;
+
+    public Calculator(ILogger logger)
+    {
+        _logger = logger;
+    }
+    public int Add(int a, int b)
+    {
+        int result =  a + b;
+        _logger.LogInfo($"Выполнено сложение: {a} + {b} = {result}");
+        return result;
     }
 }
 
@@ -20,78 +51,27 @@ class Program
 {
     static void Main()
     {
-        List<Human> humans = new List<Human>() // людишки
-        {
-            new Human("Иванов"),
-            new Human("Петров"),
-            new Human("Сидоров"),
-            new Human("Алексеев"),
-            new Human("Борисов")
-        };
-
-        Console.WriteLine("Введите 1 для сортировки от А до Я и 2 для сортировки от Я до А");
-
+        ILogger logger = new ConsoleLogger();
+        Calculator calculator = new Calculator(logger);
         try
         {
-            int choice = int.Parse(Console.ReadLine());
+            Console.WriteLine("Введите первое число:");
+            int a = int.Parse(Console.ReadLine());
 
-            List<Human> sortedHumans;
+            Console.WriteLine("Введите второе число:");
+            int b = int.Parse(Console.ReadLine());
 
-            if (choice == 1)
-            {
-                // Сортировка от А до Я
-                sortedHumans = humans.OrderBy(h => h.Surname).ToList();
-                Console.WriteLine("Сортировка от А до Я:");
-            }
-            else if (choice == 2)
-            {
-                // Сортировка от Я до А
-                sortedHumans = humans.OrderByDescending(h => h.Surname).ToList();
-                Console.WriteLine("Сортировка от Я до А:");
-            }
-            else
-            {
-                sortedHumans = humans; // без сортировки по умолчанию
-                Console.WriteLine("Выбрана сортировка по умолчанию:");
-            }
+            int result = calculator.Add(a, b);
+            Console.WriteLine($"Ответ: {result}");
+        }
+        catch (FormatException ex)
+        {
+            logger.LogError("Некорректный формат введенного числа!");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError($"Произошла ошибка: {ex.Message}");
+        }
 
-            foreach (var human in sortedHumans)
-            {
-                Console.WriteLine(human.Surname);
-            }
-        }
-        catch (FormatException)
-        {
-            Console.WriteLine("Введено не число");
-        }
-        catch (MyException)
-        {
-            Console.WriteLine("Произошла неизвестная ошибка, обратитесь к администратору");
-        }
-        catch (TimeoutException)
-        {
-            Console.WriteLine("Время операции вышло");
-        }
-        catch (NotImplementedException)
-        {
-            Console.WriteLine("Метод не реализован");
-        }
-        catch (NotSupportedException)
-        {
-            Console.WriteLine("Операция не поддерживается");
-        }
-        finally
-        {
-            Console.WriteLine("Довольны результатом y/n?");
-            string answer = Console.ReadLine();
-            if (answer == "y")
-            {
-                Console.WriteLine("Супер!");
-            }
-            else
-            {
-                Console.WriteLine("Увы...");
-            }
-        }
     }
 }
